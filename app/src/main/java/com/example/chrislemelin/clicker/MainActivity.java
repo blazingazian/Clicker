@@ -15,6 +15,7 @@ import android.animation.*;
 import android.app.FragmentTransaction;
 import android.content.SharedPreferences;
 import android.*;
+import android.widget.CheckBox;
 
 import com.example.chrislemelin.clicker.Fragments.*;
 
@@ -22,23 +23,25 @@ import com.example.chrislemelin.clicker.Fragments.*;
 import java.net.URI;
 
 public class MainActivity extends FragmentActivity implements BankAccountFrag.OnFragmentInteractionListener,
-        MainClickerFrag.OnFragmentInteractionListener{
+        MainClickerFrag.OnFragmentInteractionListener, OptionsFrag.OnFragmentInteractionListener{
 
     //private BankAccount account;// = new BankAccount();
     private SharedPreferences pref;
 
     private BankAccountFrag bankAccountFrag;
     private MainClickerFrag mainClickerFrag;
-
+    private OptionsFrag optionsFrag;
 
     public void BankAccountFragInteraction(String uri) {
         return;
     }
-
     public void MainClickerFragInteraction(String uri) {
         return;
     }
+    public void onOptionInteraction(String uri)
+    {
 
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -50,6 +53,7 @@ public class MainActivity extends FragmentActivity implements BankAccountFrag.On
 
         bankAccountFrag = new BankAccountFrag();
         mainClickerFrag = new MainClickerFrag();
+        optionsFrag = new OptionsFrag();
 
         Bundle bankAccountBundle = new Bundle();
         bankAccountBundle.putLong("money", mon);
@@ -58,17 +62,25 @@ public class MainActivity extends FragmentActivity implements BankAccountFrag.On
         {
             //return;
         }
+        FragmentManager man = getSupportFragmentManager();
+        if( man == null) {
+            Log.d("error", "msn is null");
+            return;
+        }
 
         if (findViewById(R.id.MainFragID) != null)
         {
-            FragmentManager man = getSupportFragmentManager();
-            if( man == null) {
-                Log.d("error", "msn is null");
-                return;
-            }
             man.beginTransaction()
                     .add(R.id.MainFragID, mainClickerFrag).commit();
         }
+
+
+        if (findViewById(R.id.OptionsFragID) != null)
+        {
+            man.beginTransaction()
+                    .add(R.id.OptionsFragID, optionsFrag).commit();
+        }
+
         if (findViewById(R.id.BankAcountID) != null)
         {
 
@@ -79,12 +91,6 @@ public class MainActivity extends FragmentActivity implements BankAccountFrag.On
             }
             bundle.putLong("money",mon);
             bankAccountFrag.setArguments(bundle);
-            FragmentManager man = getSupportFragmentManager();
-            if( man == null) {
-                Log.d("error", "msn is null");
-                return;
-            }
-            //man.beginTransaction().rep
             man.beginTransaction()
                     .add(R.id.BankAcountID, bankAccountFrag).commit();
         }
@@ -98,6 +104,7 @@ public class MainActivity extends FragmentActivity implements BankAccountFrag.On
     public void onStart()
     {
         super.onStart();
+        OptionsFrag opts = (OptionsFrag)getSupportFragmentManager().findFragmentById(R.id.OptionsFragID);
 
     }
 
@@ -112,13 +119,11 @@ public class MainActivity extends FragmentActivity implements BankAccountFrag.On
 
     public void MainButtonClick(View v)
     {
-
         Log.d("click1","click");
         if(bankAccountFrag != null)
         {
             bankAccountFrag.addToAccount(1);
         }
-
         Log.d("stored", pref.getLong((getString(R.string.pref_name)), 0)+"");
         SharedPreferences.Editor editor = pref.edit();
         editor.putLong((getString(R.string.pref_name)), bankAccountFrag.getBalance());
@@ -136,6 +141,16 @@ public class MainActivity extends FragmentActivity implements BankAccountFrag.On
 
         Log.d("shope","toshope");
 
+    }
+    public void ToOptionsClick(View v)
+    {
+        findViewById(R.id.OptionsFragID).setVisibility(View.VISIBLE);
+        findViewById(R.id.faderImage).setAlpha(.5f);
+    }
+    public void ExitOptionsClick(View v)
+    {
+        findViewById(R.id.OptionsFragID).setVisibility(View.GONE);
+        findViewById(R.id.faderImage).setAlpha(0f);
     }
 
 }
