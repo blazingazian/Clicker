@@ -1,7 +1,7 @@
 package com.example.chrislemelin.clicker.Fragments;
 
 import android.content.Context;
-import android.net.Uri;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -12,7 +12,7 @@ import android.widget.TextView;
 
 
 
-import com.example.chrislemelin.clicker.BankAccount;
+import com.example.chrislemelin.clicker.Resources.BankAccount;
 import com.example.chrislemelin.clicker.R;
 
 public class BankAccountFrag extends Fragment  implements Serializable {
@@ -96,17 +96,12 @@ public class BankAccountFrag extends Fragment  implements Serializable {
 
         moneyView = ((TextView) getView().findViewById(R.id.MoneyDisplayID));
 
-        if(getArguments() != null)
-        {
-            long tempMoney = getArguments().getLong("money");
-            account = new BankAccount(getArguments().getLong("money"));
-            updateDisplay();
-        }
-        else
-        {
-            account = new BankAccount(0);
-            updateDisplay();
-        }
+        long tempMoney = getActivity().getSharedPreferences(getString(R.string.pref_name),0).
+                getLong(getString(R.string.pref_money),0);
+
+        account = new BankAccount(tempMoney);
+        updateDisplay();
+
 
     }
 
@@ -141,13 +136,28 @@ public class BankAccountFrag extends Fragment  implements Serializable {
     public long getBalance()
     {
         return account.getBalance();
+    }
 
+    public boolean withdraw(Long amount)
+    {
+        boolean returnValue = account.withdraw(amount);
+        updateDisplay();
+        return returnValue;
     }
 
     private void updateDisplay()
     {
-
+        updatePref();
         moneyView.setText(account.getBalance()+"");
     }
+
+    private void updatePref()
+    {
+        SharedPreferences pref = getActivity().getSharedPreferences(getString(R.string.pref_name),0);
+        SharedPreferences.Editor editor = pref.edit();
+        editor.putLong((getString(R.string.pref_money)), account.getBalance());
+        editor.commit();
+    }
+
 
 }

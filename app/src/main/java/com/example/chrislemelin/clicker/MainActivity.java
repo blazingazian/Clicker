@@ -1,29 +1,24 @@
 package com.example.chrislemelin.clicker;
 
-import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.util.Log;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.preference.PreferenceManager;
-import android.animation.*;
-import android.app.FragmentTransaction;
 import android.content.SharedPreferences;
-import android.*;
 import android.widget.CheckBox;
 
 import com.example.chrislemelin.clicker.Fragments.*;
-
-
-import java.net.URI;
+import com.example.chrislemelin.clicker.Managers.SoundManager;
+import com.example.chrislemelin.clicker.Managers.UpgradeManager;
+import com.example.chrislemelin.clicker.Resources.Upgrade;
 
 public class MainActivity extends FragmentActivity implements BankAccountFrag.OnFragmentInteractionListener,
-        MainClickerFrag.OnFragmentInteractionListener, OptionsFrag.OnFragmentInteractionListener{
+        MainClickerFrag.OnFragmentInteractionListener, OptionsFrag.OnFragmentInteractionListener,
+        ShopFrag.OnFragmentInteractionListener, View.OnClickListener{
 
     //private BankAccount account;// = new BankAccount();
     private SharedPreferences pref;
@@ -31,17 +26,19 @@ public class MainActivity extends FragmentActivity implements BankAccountFrag.On
     private BankAccountFrag bankAccountFrag;
     private MainClickerFrag mainClickerFrag;
     private OptionsFrag optionsFrag;
+    private SoundManager soundManager;
+    private ShopFrag shopFrag;
 
+    private UpgradeManager upgradeManager;
+
+    public void onFragmentInteraction(Uri uri){return;}
     public void BankAccountFragInteraction(String uri) {
         return;
     }
     public void MainClickerFragInteraction(String uri) {
         return;
     }
-    public void onOptionInteraction(String uri)
-    {
-
-    }
+    public void onOptionInteraction(String uri) {return;}
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -49,14 +46,16 @@ public class MainActivity extends FragmentActivity implements BankAccountFrag.On
         setContentView(R.layout.activity_main);
 
         pref = getSharedPreferences((getString(R.string.pref_name)), 0);
-        long mon = pref.getLong((getString(R.string.pref_name)) ,0);
 
+        //fragments init
         bankAccountFrag = new BankAccountFrag();
         mainClickerFrag = new MainClickerFrag();
         optionsFrag = new OptionsFrag();
+        shopFrag = new ShopFrag();
 
-        Bundle bankAccountBundle = new Bundle();
-        bankAccountBundle.putLong("money", mon);
+        //managers init
+        soundManager = new SoundManager(this,pref);
+        upgradeManager = new UpgradeManager(this,pref);
 
         if(savedInstanceState != null)
         {
@@ -89,13 +88,9 @@ public class MainActivity extends FragmentActivity implements BankAccountFrag.On
             {
                 bundle = new Bundle();
             }
-            bundle.putLong("money",mon);
-            bankAccountFrag.setArguments(bundle);
             man.beginTransaction()
                     .add(R.id.BankAcountID, bankAccountFrag).commit();
         }
-
-        Log.d("made", "its lit");
 
 
     }
@@ -104,44 +99,71 @@ public class MainActivity extends FragmentActivity implements BankAccountFrag.On
     public void onStart()
     {
         super.onStart();
-        OptionsFrag opts = (OptionsFrag)getSupportFragmentManager().findFragmentById(R.id.OptionsFragID);
+        soundManager.startMusic();
 
+        ((CheckBox)findViewById(R.id.OptionsMusicID)).setChecked(pref.getBoolean(getString(R.string.pref_music),true));
+        ((CheckBox)findViewById(R.id.OptionsEffectsID)).setChecked(pref.getBoolean(getString(R.string.pref_effects),true));
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
 
-        return super.onOptionsItemSelected(item);
-    }
+    //Clicking responsibility
 
     public void MainButtonClick(View v)
     {
-        Log.d("click1","click");
         if(bankAccountFrag != null)
         {
-            bankAccountFrag.addToAccount(1);
+            long increaseValue = upgradeManager.getClickValue();
+            bankAccountFrag.addToAccount(increaseValue);
         }
-        Log.d("stored", pref.getLong((getString(R.string.pref_name)), 0)+"");
-        SharedPreferences.Editor editor = pref.edit();
-        editor.putLong((getString(R.string.pref_name)), bankAccountFrag.getBalance());
-        editor.commit();
     }
+
+    //Shop Stuff
+
     public void ToShopClick(View v)
     {
         android.support.v4.app.FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 
-        Fragment newFragment = new MainClickerFrag();
+        Fragment newFragment = shopFrag;
+
+        Bundle bundle = getIntent().getExtras();
+        if(bundle == null)
+        {
+            bundle = new Bundle();
+        }
+        bundle.putSerializable("upgrades",upgradeManager);
+        newFragment.setArguments(bundle);
 
         ft.setCustomAnimations(R.anim.enter_from_left, R.anim.exit_to_right);
         ft.replace(R.id.MainFragID, newFragment, "fragment");
         ft.commit();
-
-        Log.d("shope","toshope");
-
     }
+    public void ExitShopClick(View v)
+    {
+        android.support.v4.app.FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+
+        Fragment newFragment = mainClickerFrag;
+
+        ft.setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left);
+        ft.replace(R.id.MainFragID, newFragment, "fragment");
+        ft.commit();
+    }
+
+    public void onClick(View v)
+    {
+        Log.d("upgrade click", ""+v.getTag().toString());
+        Upgrade up = upgradeManager.getUpgrade(v.getTag().toString());
+
+        if(bankAccountFrag.withdraw((long)up.getCost()))
+        {
+            if (upgradeManager.TryToActivateUpgrade(v.getTag().toString()))
+            {
+                shopFrag.drawButtons();
+            }
+        }
+    }
+
+    // Options Menu Stuff
+
     public void ToOptionsClick(View v)
     {
         findViewById(R.id.OptionsFragID).setVisibility(View.VISIBLE);
@@ -151,6 +173,30 @@ public class MainActivity extends FragmentActivity implements BankAccountFrag.On
     {
         findViewById(R.id.OptionsFragID).setVisibility(View.GONE);
         findViewById(R.id.faderImage).setAlpha(0f);
+    }
+
+    // Sound Manager Stuff
+
+    public void ToggleEffects(View v)
+    {
+        CheckBox chex = (CheckBox)v;
+        soundManager.setEffects(chex.isChecked());
+    }
+    public void ToggleMusic(View v)
+    {
+        CheckBox chex = (CheckBox)v;
+        soundManager.setMusic(chex.isChecked());
+    }
+
+    public void onPause()
+    {
+        super.onPause();
+        soundManager.pauseMusic();
+    }
+    public void onStop()
+    {
+        super.onStop();
+        soundManager.pauseMusic();
     }
 
 }

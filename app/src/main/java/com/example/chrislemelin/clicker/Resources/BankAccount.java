@@ -1,4 +1,4 @@
-package com.example.chrislemelin.clicker;
+package com.example.chrislemelin.clicker.Resources;
 
 import java.io.Serializable;
 
@@ -28,6 +28,7 @@ public class BankAccount implements Serializable
     {
         return money;
     }
+
     public boolean withdraw(long amount)
     {
         if(money >= amount)

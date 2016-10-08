@@ -1,49 +1,64 @@
 package com.example.chrislemelin.clicker.Fragments;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.chrislemelin.clicker.Fragments.ShopFragments.ShopBotFrag;
 import com.example.chrislemelin.clicker.Managers.UpgradeManager;
 import com.example.chrislemelin.clicker.R;
+import com.example.chrislemelin.clicker.Resources.Upgrade;
+import com.example.chrislemelin.clicker.Resources.UpgradeType;
+
+import java.util.ArrayList;
+
 
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link MainClickerFrag.OnFragmentInteractionListener} interface
+ * {@link ShopFrag.OnFragmentInteractionListener} interface
  * to handle interaction events.
- * Use the {@link MainClickerFrag#newInstance} factory method to
+ * Use the {@link ShopFrag#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class MainClickerFrag extends Fragment {
+public class ShopFrag extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
-
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
 
-    public String type()
-    {
-        return "";
-    }
+
 
 
     private OnFragmentInteractionListener mListener;
 
-    public MainClickerFrag() {
+    private UpgradeManager upgradeManager;
+
+    private ArrayList<Upgrade> allUpgrades = new ArrayList<Upgrade>();
+    private ArrayList<Upgrade> clickerUpgrades = new ArrayList<Upgrade>();
+    private ArrayList<Upgrade> yellingUpgrades = new ArrayList<Upgrade>();
+    private ArrayList<Upgrade> passiveUpgrades = new ArrayList<Upgrade>();
+
+    private ShopBotFrag clickerUpgradesFrag = new ShopBotFrag();
+
+    private ShopBotFrag currentFrag;
+
+
+
+    public ShopFrag() {
         // Required empty public constructor
     }
-
-
-
 
     /**
      * Use this factory method to create a new instance of
@@ -51,11 +66,11 @@ public class MainClickerFrag extends Fragment {
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
-     * @return A new instance of fragment MainClickerFrag.
+     * @return A new instance of fragment ShopFrag.
      */
     // TODO: Rename and change types and number of parameters
-    public static MainClickerFrag newInstance(String param1, String param2) {
-        MainClickerFrag fragment = new MainClickerFrag();
+    public static ShopFrag newInstance(String param1, String param2) {
+        ShopFrag fragment = new ShopFrag();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -70,19 +85,21 @@ public class MainClickerFrag extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
-
-
-
-
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_main_clicker, container, false);
+        return inflater.inflate(R.layout.fragment_shop, container, false);
     }
 
+    // TODO: Rename method, update argument and hook method into UI event
+    public void onButtonPressed(Uri uri) {
+        if (mListener != null) {
+            mListener.onFragmentInteraction(uri);
+        }
+    }
 
     @Override
     public void onAttach(Context context) {
@@ -113,7 +130,67 @@ public class MainClickerFrag extends Fragment {
      */
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
-        void MainClickerFragInteraction(String uri);
+        void onFragmentInteraction(Uri uri);
     }
+
+    public void onActivityCreated(Bundle b)
+    {
+        super.onActivityCreated(b);
+
+        upgradeManager=  (UpgradeManager)getArguments().getSerializable("upgrades");
+
+        clickerUpgrades.clear();
+        passiveUpgrades.clear();
+        yellingUpgrades.clear();
+
+
+        allUpgrades = upgradeManager.getUpgrades();
+        for(Upgrade up : allUpgrades)
+        {
+            if(up.getUpgradeType() == UpgradeType.Clicker)
+            {
+                clickerUpgrades.add(up);
+            }
+            if(up.getUpgradeType() == UpgradeType.Passive)
+            {
+                passiveUpgrades.add(up);
+
+            }
+            if(up.getUpgradeType() == UpgradeType.Yelling)
+            {
+                yellingUpgrades.add(up);
+            }
+        }
+
+        Bundle bun = new Bundle();
+        bun.putSerializable("upgrades",clickerUpgrades);
+        clickerUpgradesFrag = new ShopBotFrag();
+
+
+        clickerUpgradesFrag.setArguments(bun);
+        FragmentManager man = getActivity().getSupportFragmentManager();
+        if (getActivity().findViewById(R.id.ShopBotFragID) != null)
+        {
+            man.beginTransaction()
+                    .add(R.id.ShopBotFragID, clickerUpgradesFrag).commit();
+        }
+
+        currentFrag = clickerUpgradesFrag;
+
+
+
+    }
+    public void onResume()
+    {
+        super.onResume();
+    }
+
+
+
+    public void drawButtons()
+    {
+        currentFrag.drawButtons();
+    }
+
 
 }

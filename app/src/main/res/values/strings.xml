@@ -3,5 +3,15 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="pref_name">"ClickerPrefs"</string>
+    <string name="pref_money">money</string>
+    <string name="pref_music">"music_on"</string>
+    <string name="pref_effects">"effects_on"</string>
+
+    <string name="bundle_money">money</string>
+
+
+    <string name="upgrade_tag_prefix">"upgrade_button_"</string>
+
+
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

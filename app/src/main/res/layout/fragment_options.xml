@@ -26,13 +26,13 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1">
 
-                    <android.support.v7.widget.AppCompatCheckBox
+                    <CheckBox
                         android:layout_width="match_parent"
                         android:layout_height="100dp"
+                        android:onClick="ToggleMusic"
                         android:text="music"
                         android:layout_gravity="bottom"
                         android:id="@+id/OptionsMusicID"
-
                         />
 
                 </LinearLayout>
@@ -42,12 +42,13 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1">
 
-                    <android.support.v7.widget.AppCompatCheckBox
+                    <CheckBox
                         android:layout_width="match_parent"
                         android:layout_height="100dp"
+                        android:onClick="ToggleEffects"
                         android:text="sounds"
                         android:checked="true"
-                        android:id="@+id/OptionsSoundID"
+                        android:id="@+id/OptionsEffectsID"
                         />
 
                 </LinearLayout>
@@ -63,22 +64,22 @@
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1"
+            android:layout_weight="1.2"
             android:orientation="vertical">
 
-            <android.support.v7.widget.AppCompatImageButton
+            <ImageButton
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
-                android:layout_marginTop="20dp"
-                android:background="@color/colorPrimaryDark"
+                android:layout_marginTop="15dp"
                 android:onClick="ExitOptionsClick"
+                android:background="@color/colorPrimaryDark"
                 />
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1"
+            android:layout_weight=".8"
             android:orientation="vertical">
 
         </LinearLayout>
